@@ -33,30 +33,28 @@ body{background:#0c0c0c;color:#fff;font-family:Segoe UI,Roboto,Arial;margin:0;pa
 <div class="grid" id="grid"></div>
 
 <script>
-const params = new URLSearchParams(window.location.search)
-const pasteID = params.get("id")
+const params = new URLSearchParams(window.location.search);
+const pasteID = params.get("id");
+const PLACEHOLDER = "https://tr.rbxcdn.com/c4265017c98559993061733b1125a23c/48/48/AvatarHeadshot/Png";
 
 if(!pasteID){
     document.getElementById("loading").innerText="Add ?id=PASTE_ID to the URL";
-    throw new Error("No ID")
+    throw new Error("No ID");
 }
 
-// fallback placeholder image for restricted IDs
-const PLACEHOLDER = "https://tr.rbxcdn.com/c4265017c98559993061733b1125a23c/48/48/AvatarHeadshot/Png";
-
+// Progressive load: render each image agad
 async function load(){
     try{
-        const res = await fetch(`https://pastefy.app/${pasteID}/raw`)
-        const text = await res.text()
-        const ids = text.match(/\d{6,}/g) || []
+        const res = await fetch(`https://pastefy.app/${pasteID}/raw`);
+        const text = await res.text();
+        const ids = text.match(/\d{6,}/g) || [];
 
-        document.getElementById("stats").innerText = ids.length + " stickers"
-        const grid = document.getElementById("grid")
+        document.getElementById("stats").innerText = ids.length + " stickers";
+        const grid = document.getElementById("grid");
 
         for(const id of ids){
-            const card = document.createElement("div")
-            card.className = "card"
-
+            const card = document.createElement("div");
+            card.className = "card";
             card.innerHTML = `
                 <div class="image">
                     <img id="img-${id}" src="${PLACEHOLDER}" loading="lazy" alt="Sticker">
@@ -65,41 +63,40 @@ async function load(){
                     <div class="id">${id}</div>
                     <button class="btn" onclick="copy('${id}',this)">Copy ID</button>
                 </div>
-            `
-            grid.appendChild(card)
-            loadImage(id)
+            `;
+            grid.appendChild(card);
+            // load image per ID ASAP
+            loadImage(id);
         }
 
-        document.getElementById("loading").style.display="none"
-
+        document.getElementById("loading").style.display="none";
     }catch(e){
-        console.log(e)
-        document.getElementById("loading").innerText="Failed loading stickers"
+        console.log(e);
+        document.getElementById("loading").innerText="Failed loading stickers";
     }
 }
 
+// Load per ID, mabilis na rendering
 async function loadImage(id){
     try{
-        const res = await fetch(`https://thumbnails.roblox.com/v1/assets?assetIds=${id}&size=420x420&format=Png&isCircular=false`)
-        const data = await res.json()
-
+        const res = await fetch(`https://thumbnails.roblox.com/v1/assets?assetIds=${id}&size=420x420&format=Png&isCircular=false`);
+        const data = await res.json();
         if(data.data && data.data[0] && data.data[0].imageUrl){
-            document.getElementById(`img-${id}`).src = data.data[0].imageUrl
+            document.getElementById(`img-${id}`).src = data.data[0].imageUrl;
         }
     }catch{
-        // keep placeholder
+        // Keep placeholder
     }
 }
 
 function copy(id,btn){
-    navigator.clipboard.writeText(id)
-    const t = btn.innerText
-    btn.innerText = "Copied"
-    setTimeout(()=>{btn.innerText = t},1000)
+    navigator.clipboard.writeText(id);
+    const t = btn.innerText;
+    btn.innerText = "Copied";
+    setTimeout(()=>{btn.innerText = t},1000);
 }
 
-load()
+load();
 </script>
-
 </body>
 </html>
