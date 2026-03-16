@@ -95,7 +95,7 @@ color:#666;
 <p class="stats" id="stats"></p>
 </div>
 
-<div id="loading" class="loading">Loading stickers...</div>
+<div id="loading" class="loading">Loading stickers... (using noFilter CDN)</div>
 
 <div class="grid" id="grid"></div>
 
@@ -118,28 +118,51 @@ document.getElementById("stats").innerText = ids.length + " stickers"
 
 const grid = document.getElementById("grid")
 
-for (const id of ids){
+ids.forEach(id => {
 const card = document.createElement("div")
 card.className="card"
 card.innerHTML=`
 <div class="image">
-<img id="img-${id}" loading="lazy"
-src="https://tr.rbxcdn.com/default/420/420/Image/Png/noFilter">
+<img id="img-${id}" loading="lazy" src="https://tr.rbxcdn.com/c4265017c98559993061733b1125a23c/48/48/AvatarHeadshot/Png">
 </div>
 <div class="info">
 <div class="id">${id}</div>
-<button class="btn" onclick="copy('${id}',this)">
-Copy ID
-</button>
+<button class="btn" onclick="copy('${id}',this)">Copy ID</button>
 </div>
 `
 grid.appendChild(card)
-}
+})
 
 document.getElementById("loading").style.display="none"
 
-}catch{
-document.getElementById("loading").innerText="Failed loading stickers"
+const batchSize = 5
+for (let i = 0; i < ids.length; i += batchSize) {
+const batch = ids.slice(i, i + batchSize)
+const idsString = batch.join(",")
+
+try {
+const thumbRes = await fetch(
+`https://thumbnails.roblox.com/v1/assets?assetIds=${idsString}&size=420&format=Png&isCircular=false`
+)
+const data = await thumbRes.json()
+
+if (data.data) {
+data.data.forEach(item => {
+const imgElem = document.getElementById(`img-${item.targetId}`)
+if (imgElem && item.imageUrl) {
+imgElem.src = item.imageUrl.replace(/\/Png$/, '/Png/noFilter')  // add noFilter for better caching
+}
+})
+}
+} catch (e) {
+console.log("Batch error:", e)
+}
+
+await new Promise(r => setTimeout(r, 800))
+}
+
+}catch(e){
+document.getElementById("loading").innerText="Failed - try refresh or check if IDs are valid decals"
 }
 }
 
