@@ -6,10 +6,11 @@
 <title>ZryoX's Closet</title>
 
 <style>
+
 body{
 background:#0c0c0c;
 color:#fff;
-font-family:'Segoe UI',Roboto,Arial;
+font-family:Segoe UI,Roboto,Arial;
 margin:0;
 padding:20px;
 }
@@ -17,7 +18,7 @@ padding:20px;
 .header{
 border-bottom:1px solid #1f1f1f;
 padding-bottom:15px;
-margin-bottom:25px;
+margin-bottom:20px;
 }
 
 .title{
@@ -32,58 +33,72 @@ color:#777;
 margin-top:4px;
 }
 
+.stats{
+font-size:13px;
+color:#555;
+margin-top:6px;
+}
+
 .grid{
 display:grid;
-grid-template-columns:repeat(2,1fr);
-gap:12px;
+grid-template-columns:repeat(3,1fr);
+gap:10px;
 }
 
 .card{
 background:#111;
-border-radius:12px;
+border-radius:10px;
 overflow:hidden;
 border:1px solid #1f1f1f;
 }
 
-.image-container{
+.image{
 aspect-ratio:1/1;
 display:flex;
 align-items:center;
 justify-content:center;
-padding:15px;
 background:#000;
+padding:10px;
 }
 
-.image-container img{
+.image img{
 max-width:100%;
 max-height:100%;
 }
 
-.card-info{
-padding:10px;
+.info{
+padding:8px;
 }
 
-.asset-id{
+.id{
 font-family:monospace;
 font-size:11px;
 color:#555;
-margin-bottom:8px;
+margin-bottom:6px;
 }
 
-.copy-btn{
+.btn{
 width:100%;
 background:#1a1a1a;
 border:1px solid #222;
-color:#999;
-padding:10px;
-border-radius:8px;
+color:#aaa;
+padding:8px;
+border-radius:6px;
 cursor:pointer;
+font-size:12px;
 }
 
-.copy-btn:hover{
+.btn:hover{
 background:#222;
 color:#fff;
 }
+
+.loading{
+text-align:center;
+margin-top:40px;
+color:#666;
+}
+
 </style>
 </head>
 
@@ -92,32 +107,35 @@ color:#fff;
 <div class="header">
 <p class="title">ZryoX's Closet</p>
 <p class="subtitle">Sticker Gallery</p>
+<p class="stats" id="stats"></p>
 </div>
 
-<div class="grid" id="sticker-grid"></div>
+<div id="loading" class="loading">Loading stickers...</div>
+
+<div class="grid" id="grid"></div>
 
 <script>
 
 const params = new URLSearchParams(window.location.search)
 const pasteID = params.get("id")
 
-// kung walang id, stop agad
 if(!pasteID){
+document.getElementById("loading").style.display="none"
 throw new Error("No ID")
 }
 
-async function loadStickers(){
+async function load(){
 
 try{
 
-const res = await fetch(`https://api.pastefy.app/paste/${pasteID}`)
-const data = await res.json()
+const res = await fetch(`https://pastefy.app/${pasteID}/raw`)
+const text = await res.text()
 
-const content = data.paste.content
+const ids = text.match(/\d{6,}/g) || []
 
-const ids = content.match(/\d{6,}/g) || []
+document.getElementById("stats").innerText = ids.length + " stickers"
 
-const grid = document.getElementById("sticker-grid")
+const grid = document.getElementById("grid")
 
 ids.forEach(id=>{
 
@@ -126,14 +144,14 @@ card.className="card"
 
 card.innerHTML=`
 
-<div class="image-container">
-<img src="https://assetdelivery.roblox.com/v1/asset/?id=${id}">
+<div class="image">
+<img loading="lazy" src="https://assetdelivery.roblox.com/v1/asset/?id=${id}">
 </div>
 
-<div class="card-info">
-<div class="asset-id">${id}</div>
+<div class="info">
+<div class="id">${id}</div>
 
-<button class="copy-btn" onclick="copyId('${id}',this)">
+<button class="btn" onclick="copy('${id}',this)">
 Copy ID
 </button>
 </div>
@@ -144,19 +162,21 @@ grid.appendChild(card)
 
 })
 
-}catch(e){
+document.getElementById("loading").style.display="none"
 
-console.log("Failed loading stickers")
+}catch{
+
+document.getElementById("loading").innerText="Failed to load stickers"
 
 }
 
 }
 
-function copyId(id,btn){
+function copy(id,btn){
 
 navigator.clipboard.writeText(id)
 
-let t=btn.innerText
+const t=btn.innerText
 btn.innerText="Copied"
 
 setTimeout(()=>{
@@ -165,7 +185,7 @@ btn.innerText=t
 
 }
 
-loadStickers()
+load()
 
 </script>
 
