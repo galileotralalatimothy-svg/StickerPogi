@@ -6,7 +6,6 @@
 <title>ZryoX's Closet</title>
 
 <style>
-
 body{
 background:#0c0c0c;
 color:#fff;
@@ -122,7 +121,6 @@ text-align:center;
 color:#777;
 margin-top:60px;
 }
-
 </style>
 </head>
 
@@ -151,40 +149,30 @@ margin-top:60px;
 
 <script>
 
-const urlParams = new URLSearchParams(window.location.search)
-const pasteID = urlParams.get("id")
-
-const proxy = "https://api.allorigins.win/raw?url="
+const params = new URLSearchParams(window.location.search)
+const pasteID = params.get("id")
 
 async function init(){
 
 if(!pasteID){
-
-document.getElementById("loading-text").innerHTML=`
+document.getElementById("loading-text").innerHTML = `
 <h2 style="color:#aaa">No paste ID</h2>
 <p style="color:#555">Add <code>?id=PASTE_ID</code> to the URL.</p>
 `
-
 return
 }
 
 try{
 
-const res = await fetch(
-proxy + encodeURIComponent(`https://api.pastefy.app/paste/${pasteID}`)
-)
-
+const res = await fetch(`https://api.pastefy.app/paste/${pasteID}`)
 const data = await res.json()
 
 const content = data.paste.content
-
 const ids = content.match(/\d{6,}/g) || []
 
-if(ids.length===0){
-
+if(ids.length === 0){
 document.getElementById("loading-text").innerText="No stickers"
 return
-
 }
 
 document.getElementById("loading-text").style.display="none"
@@ -193,11 +181,11 @@ document.getElementById("user-info").style.display="block"
 document.getElementById("user-title").innerText = data.paste.title || "ZryoX"
 document.getElementById("user-stats").innerText = ids.length + " stickers"
 
-document.getElementById("view-raw").onclick=()=>{
+document.getElementById("view-raw").onclick = ()=>{
 window.open(`https://pastefy.app/${pasteID}/raw`)
 }
 
-document.getElementById("copy-all").onclick=()=>{
+document.getElementById("copy-all").onclick = ()=>{
 navigator.clipboard.writeText(ids.join("\n"))
 }
 
@@ -211,42 +199,19 @@ card.className="card"
 card.innerHTML=`
 
 <div class="image-container">
-<img id="img-${id}"
-src="https://tr.rbxcdn.com/c4265017c98559993061733b1125a23c/48/48/AvatarHeadshot/Png">
+<img src="https://assetdelivery.roblox.com/v1/asset/?id=${id}">
 </div>
 
 <div class="card-info">
-
 <div class="asset-id">${id}</div>
 
 <button class="copy-btn" onclick="copyId('${id}',this)">
 Copy ID
 </button>
-
 </div>
-
 `
 
 grid.appendChild(card)
-
-const thumbUrl=`https://thumbnails.roblox.com/v1/assets?assetIds=${id}&size=420x420&format=Png&isCircular=false`
-
-fetch(proxy + encodeURIComponent(thumbUrl))
-.then(r=>r.json())
-.then(d=>{
-
-if(d.data && d.data[0] && d.data[0].imageUrl){
-
-let cdn=d.data[0].imageUrl
-
-cdn=cdn.replace(/\/\d+\/\d+\//,"/420/420/")
-cdn=cdn.replace("AvatarHeadshot","Image")
-
-document.getElementById(`img-${id}`).src=cdn
-
-}
-
-})
 
 })
 
@@ -258,17 +223,11 @@ document.getElementById("loading-text").innerText="Error loading stickers"
 
 }
 
-window.copyId=(id,btn)=>{
-
+function copyId(id,btn){
 navigator.clipboard.writeText(id)
-
 let t=btn.innerText
 btn.innerText="Copied"
-
-setTimeout(()=>{
-btn.innerText=t
-},1000)
-
+setTimeout(()=>{btn.innerText=t},1000)
 }
 
 init()
