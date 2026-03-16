@@ -83,6 +83,11 @@ body{
     margin-top:40px;
     color:#666;
 }
+.placeholder{
+    background:#222;
+    width:80%;
+    height:80%;
+}
 </style>
 </head>
 <body>
@@ -120,8 +125,7 @@ async function load(){
             card.className = "card"
             card.innerHTML = `
                 <div class="image">
-                    <img id="img-${id}" loading="lazy" 
-                    src="https://assetdelivery.roblox.com/v1/asset/?id=${id}" alt="Sticker">
+                    <img id="img-${id}" loading="lazy" alt="Sticker">
                 </div>
                 <div class="info">
                     <div class="id">${id}</div>
@@ -129,6 +133,7 @@ async function load(){
                 </div>
             `
             grid.appendChild(card)
+            loadThumbnail(id)
         }
 
         document.getElementById("loading").style.display="none"
@@ -136,6 +141,24 @@ async function load(){
     }catch(e){
         console.log(e)
         document.getElementById("loading").innerText="Failed loading stickers"
+    }
+}
+
+// Load thumbnail or show placeholder if restricted
+async function loadThumbnail(id){
+    const img = document.getElementById(`img-${id}`)
+    try{
+        const res = await fetch(`https://thumbnails.roblox.com/v1/assets?assetIds=${id}&size=420x420&format=Png&isCircular=false`)
+        const data = await res.json()
+        if(data.data && data.data[0] && data.data[0].imageUrl){
+            img.src = data.data[0].imageUrl
+        } else {
+            img.src = ""
+            img.className = "placeholder"
+        }
+    }catch{
+        img.src = ""
+        img.className = "placeholder"
     }
 }
 
