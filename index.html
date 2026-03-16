@@ -55,7 +55,7 @@
             display: flex;
             align-items: center;
             justify-content:center;
-            background: #000;
+            background: #151515; /* Medyo lighter para makita kung loading */
             position: relative;
         }
 
@@ -112,8 +112,7 @@
         <p class="stats" id="stats">Initializing...</p>
     </div>
 
-    <div id="loading" class="loading">Fetching stickers from Pastefy...</div>
-
+    <div id="loading" class="loading">Fetching stickers...</div>
     <div class="grid" id="grid"></div>
 
     <script>
@@ -126,11 +125,12 @@
 
         async function loadStickers() {
             try {
+                // 1. Kunin ang IDs mula sa Pastefy
                 const res = await fetch(`https://pastefy.app/${pasteID}/raw`);
                 if (!res.ok) throw new Error("Invalid ID");
                 
                 const text = await res.text();
-                const ids = text.match(/\d{6,}/g) || [];
+                const ids = [...new Set(text.match(/\d{6,}/g))]; // Remove duplicates
                 
                 document.getElementById("page-title").innerText = "Sticker Gallery";
                 document.getElementById("stats").innerText = `${ids.length} stickers found`;
@@ -138,19 +138,28 @@
                 const grid = document.getElementById("grid");
                 const loadingDiv = document.getElementById("loading");
 
-                for (const id of ids) {
+                // 2. Fetch thumbnail data mula sa Roblox API (Batch request para mabilis)
+                // Nilimitahan natin sa 100 per request dahil yun ang limit ng Roblox API
+                const chunkedIds = ids.slice(0, 100); 
+                const thumbRes = await fetch(`https://thumbnails.roblox.com/v1/assets?assetIds=${chunkedIds.join(',')}&returnPolicy=PlaceHolder&size=420x420&format=Png&isCircular=false`);
+                const thumbData = await thumbRes.json();
+                
+                // Gawan natin ng Map para madaling hanapin yung URL gamit ang ID
+                const thumbMap = {};
+                thumbData.data.forEach(item => {
+                    thumbMap[item.targetId] = item.imageUrl;
+                });
+
+                for (const id of chunkedIds) {
                     const card = document.createElement("div");
                     card.className = "card";
 
-                    // Heto yung request mong URL format para mag-load agad ang images
-                    const imageUrl = `https://tr.rbxcdn.com/${id}/420/420/Image/Png/noFilter`;
+                    // Gamitin ang URL mula sa API, fallback sa placeholder kung wala
+                    const imageUrl = thumbMap[id] || "https://t0.rbxcdn.com/38639a04964645396560096e206063f3";
 
                     card.innerHTML = `
                         <div class="image">
-                            <img id="img-${id}" 
-                                 src="${imageUrl}" 
-                                 loading="lazy"
-                                 alt="Sticker">
+                            <img src="${imageUrl}" loading="lazy" alt="Sticker">
                         </div>
                         <div class="info">
                             <div class="id-text">${id}</div>
@@ -163,7 +172,8 @@
                 loadingDiv.style.display = "none";
 
             } catch (err) {
-                document.getElementById("loading").innerText = "Failed to load stickers. Check your Paste ID.";
+                console.error(err);
+                document.getElementById("loading").innerText = "Failed to load stickers. The IDs might be private or API is down.";
             }
         }
 
