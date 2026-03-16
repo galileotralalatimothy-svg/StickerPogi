@@ -6,6 +6,7 @@
 <title>ZryoX's Closet</title>
 
 <style>
+
 body{
 background:#0c0c0c;
 color:#fff;
@@ -13,58 +14,67 @@ font-family:Segoe UI,Roboto,Arial;
 margin:0;
 padding:20px;
 }
+
 .header{
 border-bottom:1px solid #1f1f1f;
 padding-bottom:15px;
 margin-bottom:20px;
 }
+
 .title{
 font-size:26px;
 font-weight:700;
 margin:0;
 }
+
 .subtitle{
 font-size:14px;
 color:#777;
 margin-top:4px;
 }
+
 .stats{
 font-size:13px;
 color:#555;
 margin-top:6px;
 }
+
 .grid{
 display:grid;
 grid-template-columns:repeat(3,1fr);
 gap:10px;
 }
+
 .card{
 background:#111;
 border-radius:10px;
 overflow:hidden;
 border:1px solid #1f1f1f;
 }
+
 .image{
-aspect-ratio:1/1;
+aspect-ratio:2/1;
 display:flex;
-align-items:center;
-justify-content:center;
 background:#000;
 }
+
 .image img{
-width:100%;
+width:50%;
 height:100%;
 object-fit:contain;
 }
+
 .info{
 padding:8px;
 }
+
 .id{
 font-family:monospace;
 font-size:11px;
 color:#555;
 margin-bottom:6px;
 }
+
 .btn{
 width:100%;
 background:#1a1a1a;
@@ -75,15 +85,18 @@ border-radius:6px;
 cursor:pointer;
 font-size:12px;
 }
+
 .btn:hover{
 background:#222;
 color:#fff;
 }
+
 .loading{
 text-align:center;
 margin-top:40px;
 color:#666;
 }
+
 </style>
 </head>
 
@@ -95,11 +108,12 @@ color:#666;
 <p class="stats" id="stats"></p>
 </div>
 
-<div id="loading" class="loading">Loading stickers... (using noFilter for raw thumbnails)</div>
+<div id="loading" class="loading">Loading stickers...</div>
 
 <div class="grid" id="grid"></div>
 
 <script>
+
 const params = new URLSearchParams(window.location.search)
 const pasteID = params.get("id")
 
@@ -109,87 +123,92 @@ throw new Error("No ID")
 }
 
 async function load(){
+
 try{
+
 const res = await fetch(`https://pastefy.app/${pasteID}/raw`)
 const text = await res.text()
 
 const ids = text.match(/\d{6,}/g) || []
+
 document.getElementById("stats").innerText = ids.length + " stickers"
 
 const grid = document.getElementById("grid")
 
-ids.forEach(id => {
-const card = document.createElement("div")
+for (const id of ids){
+
+const card=document.createElement("div")
 card.className="card"
+
 card.innerHTML=`
+
 <div class="image">
-<img id="img-${id}" loading="lazy" src="https://tr.rbxcdn.com/c4265017c98559993061733b1125a23c/48/48/AvatarHeadshot/Png">
+<img id="img1-${id}" loading="lazy"
+src="https://tr.rbxcdn.com/c4265017c98559993061733b1125a23c/48/48/AvatarHeadshot/Png">
+<img id="img2-${id}" loading="lazy"
+src="https://tr.rbxcdn.com/c4265017c98559993061733b1125a23c/48/48/AvatarHeadshot/Png">
 </div>
+
 <div class="info">
 <div class="id">${id}</div>
-<button class="btn" onclick="copy('${id}',this)">Copy ID</button>
+
+<button class="btn" onclick="copy('${id}',this)">
+Copy ID
+</button>
 </div>
+
 `
+
 grid.appendChild(card)
-})
+
+loadImage(id)
+
+}
 
 document.getElementById("loading").style.display="none"
 
-const batchSize = 5
-for (let i = 0; i < ids.length; i += batchSize) {
-const batch = ids.slice(i, i + batchSize)
-const idsString = batch.join(",")
+}catch{
 
-for (let attempt = 1; attempt <= 2; attempt++) {
-try {
-const thumbRes = await fetch(
-`https://thumbnails.roblox.com/v1/assets?assetIds=${idsString}&size=420&format=Png&isCircular=false`
-)
-if (thumbRes.ok) {
-const data = await thumbRes.json()
-if (data.data) {
-data.data.forEach(item => {
-const imgElem = document.getElementById(`img-${item.targetId}`)
-if (imgElem && item.imageUrl && item.state === "Completed") {
-let url = item.imageUrl
-if (!url.includes('/noFilter')) {
-url = url.replace(/\/Png$/, '/Png/noFilter')
-}
-imgElem.src = url
-} else if (imgElem) {
-imgElem.src = `https://www.roblox.com/Thumbs/Asset.ashx?assetId=${item.targetId}&width=420&height=420&format=png`
-}
-})
-break
-}
-} else if (thumbRes.status === 429) {
-await new Promise(r => setTimeout(r, 2000))
-}
-} catch (e) {
-console.log("Attempt " + attempt + " failed:", e)
-}
-await new Promise(r => setTimeout(r, 1200))
+document.getElementById("loading").innerText="Failed loading stickers"
+
 }
 
-await new Promise(r => setTimeout(r, 800))
 }
 
-}catch(e){
-console.error("Main load error:", e)
-document.getElementById("loading").innerText="Failed loading stickers - check console (F12) or try fewer IDs"
+async function loadImage(id){
+
+try{
+
+const res = await fetch(`https://thumbnails.roblox.com/v1/assets?assetIds=${id}&size=420x420&format=Png&isCircular=false`)
+const data = await res.json()
+
+if(data.data && data.data[0]){
+
+const url = data.data[0].imageUrl
+document.getElementById(`img1-${id}`).src = url
+document.getElementById(`img2-${id}`).src = url
+
 }
+
+}catch{}
+
 }
 
 function copy(id,btn){
+
 navigator.clipboard.writeText(id)
+
 const t=btn.innerText
-btn.innerText="Copied!"
+btn.innerText="Copied"
+
 setTimeout(()=>{
 btn.innerText=t
 },1000)
+
 }
 
 load()
+
 </script>
 
 </body>
