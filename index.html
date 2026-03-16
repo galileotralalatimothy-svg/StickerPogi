@@ -83,11 +83,6 @@ body{
     margin-top:40px;
     color:#666;
 }
-.placeholder{
-    background:#222;
-    width:80%;
-    height:80%;
-}
 </style>
 </head>
 <body>
@@ -111,6 +106,14 @@ if(!pasteID){
     throw new Error("No ID")
 }
 
+// **Manual mapping of sticker ID → public image hash**
+const imageMap = {
+    "73426747843582":"180DAY-5a72278ef15969615cefcc684868d3af",
+    "101840946120849":"180DAY-abc123examplehash",
+    "112084077850956":"180DAY-xyz456examplehash",
+    // add more IDs here with their corresponding image hash
+}
+
 async function load(){
     try{
         const res = await fetch(`https://pastefy.app/${pasteID}/raw`)
@@ -123,9 +126,14 @@ async function load(){
         for(const id of ids){
             const card = document.createElement("div")
             card.className = "card"
+            
+            // check if we have a mapped public image
+            const hash = imageMap[id] || "placeholderhash"
+            const imgUrl = `https://tr.rbxcdn.com/${hash}/420/420/Image/Png/noFilter`
+            
             card.innerHTML = `
                 <div class="image">
-                    <img id="img-${id}" loading="lazy" alt="Sticker">
+                    <img src="${imgUrl}" loading="lazy" alt="Sticker">
                 </div>
                 <div class="info">
                     <div class="id">${id}</div>
@@ -133,7 +141,6 @@ async function load(){
                 </div>
             `
             grid.appendChild(card)
-            loadThumbnail(id)
         }
 
         document.getElementById("loading").style.display="none"
@@ -141,24 +148,6 @@ async function load(){
     }catch(e){
         console.log(e)
         document.getElementById("loading").innerText="Failed loading stickers"
-    }
-}
-
-// Load thumbnail or show placeholder if restricted
-async function loadThumbnail(id){
-    const img = document.getElementById(`img-${id}`)
-    try{
-        const res = await fetch(`https://thumbnails.roblox.com/v1/assets?assetIds=${id}&size=420x420&format=Png&isCircular=false`)
-        const data = await res.json()
-        if(data.data && data.data[0] && data.data[0].imageUrl){
-            img.src = data.data[0].imageUrl
-        } else {
-            img.src = ""
-            img.className = "placeholder"
-        }
-    }catch{
-        img.src = ""
-        img.className = "placeholder"
     }
 }
 
