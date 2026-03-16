@@ -109,84 +109,47 @@ throw new Error("No ID")
 }
 
 async function load(){
-
 try{
-
 const res = await fetch(`https://pastefy.app/${pasteID}/raw`)
 const text = await res.text()
 
 const ids = text.match(/\d{6,}/g) || []
-
 document.getElementById("stats").innerText = ids.length + " stickers"
 
 const grid = document.getElementById("grid")
 
 for (const id of ids){
-
-const card=document.createElement("div")
+const card = document.createElement("div")
 card.className="card"
-
 card.innerHTML=`
-
 <div class="image">
 <img id="img-${id}" loading="lazy"
-src="https://tr.rbxcdn.com/c4265017c98559993061733b1125a23c/48/48/AvatarHeadshot/Png">
+src="https://www.roblox.com/Thumbs/Asset.ashx?assetId=${id}&width=420&height=420&format=png">
 </div>
-
 <div class="info">
 <div class="id">${id}</div>
-
 <button class="btn" onclick="copy('${id}',this)">
 Copy ID
 </button>
 </div>
-
 `
-
 grid.appendChild(card)
-
-loadImage(id)
-
 }
 
 document.getElementById("loading").style.display="none"
 
 }catch{
-
 document.getElementById("loading").innerText="Failed loading stickers"
-
 }
-
-}
-
-async function loadImage(id){
-
-try{
-
-const res = await fetch(`https://thumbnails.roblox.com/v1/assets?assetIds=${id}&size=420x420&format=Png&isCircular=false`)
-const data = await res.json()
-
-if(data.data && data.data[0]){
-
-document.getElementById(`img-${id}`).src = data.data[0].imageUrl
-
-}
-
-}catch{}
-
 }
 
 function copy(id,btn){
-
 navigator.clipboard.writeText(id)
-
 const t=btn.innerText
 btn.innerText="Copied"
-
 setTimeout(()=>{
 btn.innerText=t
 },1000)
-
 }
 
 load()
