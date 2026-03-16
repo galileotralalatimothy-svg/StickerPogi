@@ -58,12 +58,12 @@ display:flex;
 align-items:center;
 justify-content:center;
 background:#000;
-padding:10px;
 }
 
 .image img{
-max-width:100%;
-max-height:100%;
+width:100%;
+height:100%;
+object-fit:contain;
 }
 
 .info{
@@ -120,7 +120,7 @@ const params = new URLSearchParams(window.location.search)
 const pasteID = params.get("id")
 
 if(!pasteID){
-document.getElementById("loading").style.display="none"
+document.getElementById("loading").innerText=""
 throw new Error("No ID")
 }
 
@@ -137,7 +137,7 @@ document.getElementById("stats").innerText = ids.length + " stickers"
 
 const grid = document.getElementById("grid")
 
-ids.forEach(id=>{
+for (const id of ids){
 
 const card=document.createElement("div")
 card.className="card"
@@ -145,7 +145,8 @@ card.className="card"
 card.innerHTML=`
 
 <div class="image">
-<img loading="lazy" src="https://assetdelivery.roblox.com/v1/asset/?id=${id}">
+<img id="img-${id}" loading="lazy"
+src="https://tr.rbxcdn.com/c4265017c98559993061733b1125a23c/48/48/AvatarHeadshot/Png">
 </div>
 
 <div class="info">
@@ -160,15 +161,34 @@ Copy ID
 
 grid.appendChild(card)
 
-})
+loadImage(id)
+
+}
 
 document.getElementById("loading").style.display="none"
 
 }catch{
 
-document.getElementById("loading").innerText="Failed to load stickers"
+document.getElementById("loading").innerText="Failed loading stickers"
 
 }
+
+}
+
+async function loadImage(id){
+
+try{
+
+const res = await fetch(`https://thumbnails.roblox.com/v1/assets?assetIds=${id}&size=420x420&format=Png&isCircular=false`)
+const data = await res.json()
+
+if(data.data && data.data[0]){
+
+document.getElementById(`img-${id}`).src = data.data[0].imageUrl
+
+}
+
+}catch{}
 
 }
 
