@@ -32,37 +32,6 @@ color:#777;
 margin-top:4px;
 }
 
-.user-section{
-display:none;
-margin-bottom:25px;
-}
-
-.username{
-font-size:22px;
-font-weight:700;
-margin-bottom:6px;
-}
-
-.stats{
-font-size:13px;
-color:#555;
-margin-bottom:12px;
-}
-
-.button-group{
-display:flex;
-gap:10px;
-}
-
-.btn{
-background:#1a1a1a;
-border:1px solid #2a2a2a;
-color:#eee;
-padding:10px 16px;
-border-radius:8px;
-cursor:pointer;
-}
-
 .grid{
 display:grid;
 grid-template-columns:repeat(2,1fr);
@@ -115,12 +84,6 @@ cursor:pointer;
 background:#222;
 color:#fff;
 }
-
-#loading-text{
-text-align:center;
-color:#777;
-margin-top:60px;
-}
 </style>
 </head>
 
@@ -131,20 +94,6 @@ margin-top:60px;
 <p class="subtitle">Sticker Gallery</p>
 </div>
 
-<div id="loading-text">Fetching stickers...</div>
-
-<div class="user-section" id="user-info">
-
-<p class="username" id="user-title">ZryoX's Stickers</p>
-<p class="stats" id="user-stats">0 stickers</p>
-
-<div class="button-group">
-<button class="btn" id="copy-all">Copy All IDs</button>
-<button class="btn" id="view-raw">RAW</button>
-</div>
-
-</div>
-
 <div class="grid" id="sticker-grid"></div>
 
 <script>
@@ -152,15 +101,12 @@ margin-top:60px;
 const params = new URLSearchParams(window.location.search)
 const pasteID = params.get("id")
 
-async function init(){
-
+// kung walang id, stop agad
 if(!pasteID){
-document.getElementById("loading-text").innerHTML = `
-<h2 style="color:#aaa">No paste ID</h2>
-<p style="color:#555">Add <code>?id=PASTE_ID</code> to the URL.</p>
-`
-return
+throw new Error("No ID")
 }
+
+async function loadStickers(){
 
 try{
 
@@ -168,26 +114,8 @@ const res = await fetch(`https://api.pastefy.app/paste/${pasteID}`)
 const data = await res.json()
 
 const content = data.paste.content
+
 const ids = content.match(/\d{6,}/g) || []
-
-if(ids.length === 0){
-document.getElementById("loading-text").innerText="No stickers"
-return
-}
-
-document.getElementById("loading-text").style.display="none"
-document.getElementById("user-info").style.display="block"
-
-document.getElementById("user-title").innerText = data.paste.title || "ZryoX"
-document.getElementById("user-stats").innerText = ids.length + " stickers"
-
-document.getElementById("view-raw").onclick = ()=>{
-window.open(`https://pastefy.app/${pasteID}/raw`)
-}
-
-document.getElementById("copy-all").onclick = ()=>{
-navigator.clipboard.writeText(ids.join("\n"))
-}
 
 const grid = document.getElementById("sticker-grid")
 
@@ -209,28 +137,35 @@ card.innerHTML=`
 Copy ID
 </button>
 </div>
+
 `
 
 grid.appendChild(card)
 
 })
 
-}catch{
+}catch(e){
 
-document.getElementById("loading-text").innerText="Error loading stickers"
+console.log("Failed loading stickers")
 
 }
 
 }
 
 function copyId(id,btn){
+
 navigator.clipboard.writeText(id)
+
 let t=btn.innerText
 btn.innerText="Copied"
-setTimeout(()=>{btn.innerText=t},1000)
+
+setTimeout(()=>{
+btn.innerText=t
+},1000)
+
 }
 
-init()
+loadStickers()
 
 </script>
 
