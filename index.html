@@ -41,13 +41,8 @@ if(!pasteID){
     throw new Error("No ID")
 }
 
-// Simple hash generator for demonstration (different hash per ID)
-function generateHash(id){
-    let s = 0;
-    for(let i=0;i<id.length;i++){ s += id.charCodeAt(i)*7 }
-    let hash = s.toString(16).padStart(32,'0');
-    return hash.slice(0,32)
-}
+// fallback placeholder image for restricted IDs
+const PLACEHOLDER = "https://tr.rbxcdn.com/c4265017c98559993061733b1125a23c/48/48/AvatarHeadshot/Png";
 
 async function load(){
     try{
@@ -62,13 +57,9 @@ async function load(){
             const card = document.createElement("div")
             card.className = "card"
 
-            // Generate unique placeholder image per ID
-            const hash = generateHash(id)
-            const imgUrl = `https://tr.rbxcdn.com/180DAY-${hash}/420/420/Image/Png/noFilter`
-
             card.innerHTML = `
                 <div class="image">
-                    <img src="${imgUrl}" loading="lazy" alt="Sticker">
+                    <img id="img-${id}" src="${PLACEHOLDER}" loading="lazy" alt="Sticker">
                 </div>
                 <div class="info">
                     <div class="id">${id}</div>
@@ -76,6 +67,7 @@ async function load(){
                 </div>
             `
             grid.appendChild(card)
+            loadImage(id)
         }
 
         document.getElementById("loading").style.display="none"
@@ -83,6 +75,19 @@ async function load(){
     }catch(e){
         console.log(e)
         document.getElementById("loading").innerText="Failed loading stickers"
+    }
+}
+
+async function loadImage(id){
+    try{
+        const res = await fetch(`https://thumbnails.roblox.com/v1/assets?assetIds=${id}&size=420x420&format=Png&isCircular=false`)
+        const data = await res.json()
+
+        if(data.data && data.data[0] && data.data[0].imageUrl){
+            document.getElementById(`img-${id}`).src = data.data[0].imageUrl
+        }
+    }catch{
+        // keep placeholder
     }
 }
 
