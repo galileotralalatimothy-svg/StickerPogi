@@ -42,8 +42,10 @@ if(!pasteID){
     throw new Error("No ID");
 }
 
-// Progressive load: render each image agad
-async function load(){
+// Limit concurrent fetches to avoid hanging browser
+const CONCURRENCY = 10;
+
+async function load() {
     try{
         const res = await fetch(`https://pastefy.app/${pasteID}/raw`);
         const text = await res.text();
@@ -52,7 +54,8 @@ async function load(){
         document.getElementById("stats").innerText = ids.length + " stickers";
         const grid = document.getElementById("grid");
 
-        for(const id of ids){
+        // Create all cards first with placeholders
+        ids.forEach(id => {
             const card = document.createElement("div");
             card.className = "card";
             card.innerHTML = `
@@ -65,18 +68,26 @@ async function load(){
                 </div>
             `;
             grid.appendChild(card);
-            // load image per ID ASAP
-            loadImage(id);
-        }
+        });
 
         document.getElementById("loading").style.display="none";
+
+        // Progressive loading with concurrency
+        let i = 0;
+        async function nextBatch() {
+            const batch = ids.slice(i, i+CONCURRENCY);
+            await Promise.allSettled(batch.map(loadImage));
+            i += CONCURRENCY;
+            if(i < ids.length) nextBatch();
+        }
+        nextBatch();
+
     }catch(e){
         console.log(e);
         document.getElementById("loading").innerText="Failed loading stickers";
     }
 }
 
-// Load per ID, mabilis na rendering
 async function loadImage(id){
     try{
         const res = await fetch(`https://thumbnails.roblox.com/v1/assets?assetIds=${id}&size=420x420&format=Png&isCircular=false`);
@@ -84,9 +95,7 @@ async function loadImage(id){
         if(data.data && data.data[0] && data.data[0].imageUrl){
             document.getElementById(`img-${id}`).src = data.data[0].imageUrl;
         }
-    }catch{
-        // Keep placeholder
-    }
+    }catch{}
 }
 
 function copy(id,btn){
@@ -98,5 +107,6 @@ function copy(id,btn){
 
 load();
 </script>
+
 </body>
 </html>
