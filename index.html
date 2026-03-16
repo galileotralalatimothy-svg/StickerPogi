@@ -109,69 +109,84 @@ throw new Error("No ID")
 }
 
 async function load(){
+
 try{
+
 const res = await fetch(`https://pastefy.app/${pasteID}/raw`)
 const text = await res.text()
 
 const ids = text.match(/\d{6,}/g) || []
-document.getElementById("stats").innerText = `${ids.length} stickers`
+
+document.getElementById("stats").innerText = ids.length + " stickers"
 
 const grid = document.getElementById("grid")
 
-ids.forEach(id => {
-const card = document.createElement("div")
+for (const id of ids){
+
+const card=document.createElement("div")
 card.className="card"
+
 card.innerHTML=`
+
 <div class="image">
-<img id="img-${id}" loading="lazy" 
-     src="https://tr.rbxcdn.com/c4265017c98559993061733b1125a23c/48/48/AvatarHeadshot/Png">
+<img id="img-${id}" loading="lazy"
+src="https://tr.rbxcdn.com/c4265017c98559993061733b1125a23c/48/48/AvatarHeadshot/Png">
 </div>
+
 <div class="info">
 <div class="id">${id}</div>
-<button class="btn" onclick="copy('${id}',this)">Copy ID</button>
+
+<button class="btn" onclick="copy('${id}',this)">
+Copy ID
+</button>
 </div>
+
 `
+
 grid.appendChild(card)
-})
+
+loadImage(id)
+
+}
 
 document.getElementById("loading").style.display="none"
 
-const batchSize = 10
-for (let i = 0; i < ids.length; i += batchSize) {
-const batch = ids.slice(i, i + batchSize)
-const idsString = batch.join(",")
-
-try {
-const thumbRes = await fetch(
-`https://thumbnails.roblox.com/v1/assets?assetIds=${idsString}&size=420x420&format=Png&isCircular=false`
-)
-const data = await thumbRes.json()
-
-if (data.data) {
-data.data.forEach(item => {
-const imgElem = document.getElementById(`img-${item.targetId}`)
-if (imgElem && item.imageUrl) {
-imgElem.src = item.imageUrl
-}
-})
-}
-} catch (e) {
-console.log("Batch failed:", e)
-}
-
-await new Promise(r => setTimeout(r, 300))
-}
-
 }catch{
+
 document.getElementById("loading").innerText="Failed loading stickers"
+
 }
+
+}
+
+async function loadImage(id){
+
+try{
+
+const res = await fetch(`https://thumbnails.roblox.com/v1/assets?assetIds=${id}&size=420x420&format=Png&isCircular=false`)
+const data = await res.json()
+
+if(data.data && data.data[0]){
+
+document.getElementById(`img-${id}`).src = data.data[0].imageUrl
+
+}
+
+}catch{}
+
 }
 
 function copy(id,btn){
+
 navigator.clipboard.writeText(id)
+
 const t=btn.innerText
-btn.innerText="Copied!"
-setTimeout(()=>{btn.innerText=t},1000)
+btn.innerText="Copied"
+
+setTimeout(()=>{
+btn.innerText=t
+},1000)
+
 }
 
 load()
