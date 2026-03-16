@@ -13,48 +13,40 @@
             padding: 20px;
             line-height: 1.4;
         }    
-        
         .header {
             padding-bottom: 15px;
             border-bottom: 1px solid #1f1f1f;
             margin-bottom: 25px;
         }
-
         .title {
             font-size: 26px;
             font-weight: 700;
             margin: 0;
             letter-spacing: -0.5px;
         }
-
         .subtitle {
             font-size: 14px;
             color: #777;
             margin: 4px 0 0 0;
         }
-
         .user-section {
             margin-bottom: 25px;
             display: none;
         }
-
         .username {
             font-size: 22px;
             font-weight: 700;
             margin: 0 0 8px 0;
         }
-
         .stats {
             font-size: 13px;
             color: #555;
             margin-bottom: 15px;
         }
-
         .button-group {
             display: flex;
             gap: 10px;
         }
-
         .btn {
             background-color: #1a1a1a;
             color: #efefef;
@@ -65,13 +57,11 @@
             font-size: 14px;
             font-weight: 500;
         }
-
         .grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 12px;
         }
-
         .card {
             background-color: #111;
             border-radius: 12px;
@@ -80,7 +70,6 @@
             display: flex;
             flex-direction: column;
         }
-
         .image-container {
             aspect-ratio: 1/1;
             background-color: #000;
@@ -89,18 +78,15 @@
             justify-content: center;
             padding: 15px;
         }
-
         .image-container img {
             max-width: 100%;
             max-height: 100%;
             object-fit: contain;
         }
-
         .card-info {
             padding: 10px;
             background-color: #111;
         }
-
         .asset-id {
             font-family: monospace;
             font-size: 11px;
@@ -108,7 +94,6 @@
             margin-bottom: 8px;
             padding-left: 4px;
         }
-
         .copy-btn {
             width: 100%;
             background-color: #1a1a1a;
@@ -120,37 +105,26 @@
             font-size: 13px;
             transition: 0.2s;
         }
-
         .copy-btn:hover {
             background-color: #222;
             color: #fff;
         }
-
         #loading-text {
             text-align: center;
             color: #555;
             margin-top: 50px;
         }
-
         .empty-state {
             display: none;
             text-align: center;
             margin-top: 150px;
         }
-
         .empty-state h2 {
             color: #444;
             font-size: 18px;
             font-weight: 600;
             margin: 0 0 10px 0;
         }
-
-        .empty-state p {
-            color: #555;
-            font-size: 14px;
-            margin: 0;
-        }
-
         .code-snippet {
             background-color: #1a1a1a;
             padding: 4px 8px;
@@ -175,7 +149,7 @@
 
     <div class="user-section" id="user-info">
         <p class="username" id="user-title">ZryoX's Stickers</p>
-        <p class="stats" id="user-stats">0 stickers · Loading...</p>
+        <p class="stats" id="user-stats">0 stickers</p>
         <div class="button-group">
             <button class="btn" id="copy-all">Copy All IDs</button>
             <button class="btn" id="view-raw">RAW</button>
@@ -188,7 +162,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         const pasteID = urlParams.get('id');
         
-        // Pinalitan natin ang proxy gamit ang mas stable na allorigins
+        // Pinalitan ko ng AllOrigins proxy (mas stable sa Vercel)
         const proxy = "https://api.allorigins.win/raw?url=";
 
         async function init() {
@@ -199,24 +173,29 @@
             }
 
             try {
-                const res = await fetch(proxy + encodeURIComponent(`https://api.pastefy.app/paste/${pasteID}`));
+                const targetUrl = `https://api.pastefy.app/paste/${pasteID}`;
+                const res = await fetch(proxy + encodeURIComponent(targetUrl));
+                
+                if (!res.ok) throw new Error('Fetch failed');
+                
                 const data = await res.json();
                 const content = data.paste.content;
                 const ids = content.match(/\d{6,}/g) || [];
 
                 if (ids.length === 0) {
-                    document.getElementById('loading-text').innerText = "No stickers found in this Paste ID.";
+                    document.getElementById('loading-text').innerText = "No IDs found in this paste.";
                     return;
                 }
 
                 document.getElementById('loading-text').style.display = "none";
                 document.getElementById('user-info').style.display = "block";
-                document.getElementById('user-title').innerText = data.paste.title || "ZryoX";
-                document.getElementById('user-stats').innerText = ids.length + " stickers";
+                document.getElementById('user-title').innerText = data.paste.title || "ZryoX's Stickers";
+                document.getElementById('user-stats').innerText = `${ids.length} stickers`;
+                
                 document.getElementById('view-raw').onclick = () => window.open(`https://pastefy.app/${pasteID}/raw`);
-
                 document.getElementById('copy-all').onclick = () => {
                     navigator.clipboard.writeText(ids.join('\n'));
+                    alert('All IDs copied!');
                 };
 
                 const grid = document.getElementById('sticker-grid');
@@ -224,45 +203,32 @@
                 ids.forEach(id => {
                     const card = document.createElement('div');
                     card.className = 'card';
-                    
-                    const thumbUrl = `https://thumbnails.roblox.com/v1/assets?assetIds=${id}&size=420x420&format=Png&isCircular=false`;
+                    // Roblox Image CDN
+                    const imgUrl = `https://www.roblox.com/asset-thumbnail/image?assetId=${id}&width=420&height=420&format=png`;
                     
                     card.innerHTML = `
                         <div class="image-container">
-                            <img id="img-${id}" src="https://tr.rbxcdn.com/c4265017c98559993061733b1125a23c/48/48/AvatarHeadshot/Png">
+                            <img src="${imgUrl}" loading="lazy" onerror="this.src='https://tr.rbxcdn.com/c4265017c98559993061733b1125a23c/48/48/AvatarHeadshot/Png'">
                         </div>
                         <div class="card-info">
                             <div class="asset-id">${id}</div>
-                            <button class="copy-btn" onclick="copyId('${id}',this)">Copy ID</button>
+                            <button class="copy-btn" onclick="copyId('${id}', this)">Copy ID</button>
                         </div>
                     `;
                     grid.appendChild(card);
-
-                    fetch(proxy + encodeURIComponent(thumbUrl))
-                        .then(r => r.json())
-                        .then(d => {
-                            if (d.data && d.data[0] && d.data[0].imageUrl) {
-                                let cdn = d.data[0].imageUrl;
-                                cdn = cdn.replace(/\/\d+\/\d+\//,"/420/420/");
-                                cdn = cdn.replace("AvatarHeadshot","Image");
-                                document.getElementById(`img-${id}`).src = cdn;
-                            }
-                        });
                 });
 
-            } catch (error) {
-                console.error(error);
-                document.getElementById('loading-text').innerText = "Error loading stickers. Check if the ID is correct or CORS is failing.";
+            } catch (err) {
+                console.error(err);
+                document.getElementById('loading-text').innerText = "Error loading stickers. Check the ID.";
             }
         }
 
         window.copyId = (id, btn) => {
             navigator.clipboard.writeText(id);
-            let t = btn.innerText;
+            const originalText = btn.innerText;
             btn.innerText = "Copied";
-            setTimeout(() => {
-                btn.innerText = t
-            }, 1000);
+            setTimeout(() => btn.innerText = originalText, 1000);
         };
 
         init();
