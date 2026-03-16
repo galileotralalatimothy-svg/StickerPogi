@@ -31,12 +31,12 @@
         }
         .user-section {
             margin-bottom: 25px;
-            display: none;
+            display: none; /* Lalabas lang kapag may data */
         }
         .username {
             font-size: 22px;
             font-weight: 700;
-            margin: 0 0 8px 0;
+            margin: 0 0 4px 0;
         }
         .stats {
             font-size: 13px;
@@ -46,6 +46,7 @@
         .button-group {
             display: flex;
             gap: 10px;
+            margin-bottom: 20px;
         }
         .btn {
             background-color: #1a1a1a;
@@ -84,15 +85,15 @@
             object-fit: contain;
         }
         .card-info {
-            padding: 10px;
+            padding: 12px;
             background-color: #111;
+            border-top: 1px solid #1a1a1a;
         }
         .asset-id {
             font-family: monospace;
-            font-size: 11px;
-            color: #555;
-            margin-bottom: 8px;
-            padding-left: 4px;
+            font-size: 12px;
+            color: #444;
+            margin-bottom: 10px;
         }
         .copy-btn {
             width: 100%;
@@ -119,19 +120,8 @@
             text-align: center;
             margin-top: 150px;
         }
-        .empty-state h2 {
-            color: #444;
-            font-size: 18px;
-            font-weight: 600;
-            margin: 0 0 10px 0;
-        }
-        .code-snippet {
-            background-color: #1a1a1a;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-family: monospace;
-            color: #666;
-        }
+        .empty-state h2 { color: #444; font-size: 18px; margin-bottom: 10px; }
+        .code-snippet { background: #1a1a1a; padding: 4px 8px; border-radius: 6px; color: #666; font-family: monospace; }
     </style>
 </head>
 <body>
@@ -148,7 +138,7 @@
     </div>
 
     <div class="user-section" id="user-info">
-        <p class="username" id="user-title">ZryoX's Stickers</p>
+        <p class="username" id="user-title">Loading User...</p>
         <p class="stats" id="user-stats">0 stickers</p>
         <div class="button-group">
             <button class="btn" id="copy-all">Copy All IDs</button>
@@ -161,9 +151,7 @@
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const pasteID = urlParams.get('id');
-        
-        // Pinalitan ko ng AllOrigins proxy (mas stable sa Vercel)
-        const proxy = "https://api.allorigins.win/raw?url=";
+        const proxy = "https://api.allorigins.win/get?url=";
 
         async function init() {
             if (!pasteID) {
@@ -174,24 +162,32 @@
 
             try {
                 const targetUrl = `https://api.pastefy.app/paste/${pasteID}`;
-                const res = await fetch(proxy + encodeURIComponent(targetUrl));
+                const response = await fetch(proxy + encodeURIComponent(targetUrl));
+                const jsonWrapper = await response.json();
                 
-                if (!res.ok) throw new Error('Fetch failed');
+                // Ang AllOrigins ay binabalot ang data sa isang 'contents' string
+                const data = JSON.parse(jsonWrapper.contents);
                 
-                const data = await res.json();
+                if (!data || !data.paste) {
+                    throw new Error("Invalid Paste Data");
+                }
+
                 const content = data.paste.content;
                 const ids = content.match(/\d{6,}/g) || [];
 
                 if (ids.length === 0) {
-                    document.getElementById('loading-text').innerText = "No IDs found in this paste.";
+                    document.getElementById('loading-text').innerText = "No sticker IDs found in this paste.";
                     return;
                 }
 
+                // Ipakita ang UI elements
                 document.getElementById('loading-text').style.display = "none";
                 document.getElementById('user-info').style.display = "block";
-                document.getElementById('user-title').innerText = data.paste.title || "ZryoX's Stickers";
-                document.getElementById('user-stats').innerText = `${ids.length} stickers`;
                 
+                // I-update ang header (gaya ng "howaskedo_v2's Stickers")
+                document.getElementById('user-title').innerText = (data.paste.title || "User") + "'s Stickers";
+                document.getElementById('user-stats').innerText = `${ids.length} stickers · ${new Date().toLocaleDateString()}`;
+
                 document.getElementById('view-raw').onclick = () => window.open(`https://pastefy.app/${pasteID}/raw`);
                 document.getElementById('copy-all').onclick = () => {
                     navigator.clipboard.writeText(ids.join('\n'));
@@ -199,16 +195,18 @@
                 };
 
                 const grid = document.getElementById('sticker-grid');
+                grid.innerHTML = ""; // Siguraduhing malinis ang grid
 
                 ids.forEach(id => {
                     const card = document.createElement('div');
                     card.className = 'card';
-                    // Roblox Image CDN
-                    const imgUrl = `https://www.roblox.com/asset-thumbnail/image?assetId=${id}&width=420&height=420&format=png`;
                     
+                    // Direct Roblox Thumbnail link
+                    const thumbUrl = `https://www.roblox.com/asset-thumbnail/image?assetId=${id}&width=420&height=420&format=png`;
+
                     card.innerHTML = `
                         <div class="image-container">
-                            <img src="${imgUrl}" loading="lazy" onerror="this.src='https://tr.rbxcdn.com/c4265017c98559993061733b1125a23c/48/48/AvatarHeadshot/Png'">
+                            <img src="${thumbUrl}" alt="Sticker" loading="lazy">
                         </div>
                         <div class="card-info">
                             <div class="asset-id">${id}</div>
@@ -220,7 +218,7 @@
 
             } catch (err) {
                 console.error(err);
-                document.getElementById('loading-text').innerText = "Error loading stickers. Check the ID.";
+                document.getElementById('loading-text').innerText = "Error loading stickers. Check if the Paste ID is valid.";
             }
         }
 
@@ -228,7 +226,11 @@
             navigator.clipboard.writeText(id);
             const originalText = btn.innerText;
             btn.innerText = "Copied";
-            setTimeout(() => btn.innerText = originalText, 1000);
+            btn.style.color = "#fff";
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.color = "#999";
+            }, 1000);
         };
 
         init();
