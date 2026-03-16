@@ -62,24 +62,6 @@ header {
   gap: 10px;
 }
 
-.logo-mark {
-  width: 26px;
-  height: 26px;
-  border: 1.5px solid var(--accent);
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-  border-radius: 6px;
-}
-
-.logo-mark::after {
-  content: '';
-  width: 9px;
-  height: 9px;
-  background: var(--accent);
-  border-radius: 2px;
-}
-
 .logo-names {
   display: flex;
   flex-direction: column;
@@ -172,31 +154,6 @@ main {
   text-align: center;
 }
 
-.state-icon {
-  width: 48px;
-  height: 48px;
-  border: 1px solid var(--border);
-  display: grid;
-  place-items: center;
-  color: var(--text-muted);
-  font-size: 20px;
-  margin-bottom: 8px;
-}
-
-.state-title {
-  font-family: var(--display);
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text);
-}
-
-.state-sub {
-  font-size: 11px;
-  color: var(--text-dim);
-  letter-spacing: 0.05em;
-  max-width: 300px;
-}
-
 .spinner {
   width: 32px;
   height: 32px;
@@ -217,7 +174,7 @@ main {
   border-bottom: 1px solid var(--border-soft);
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 12px;
 }
 
@@ -376,7 +333,6 @@ main {
 
 <header>
   <div class="logo">
-    <div class="logo-mark"></div>
     <div class="logo-names">
       <span class="logo-title">ZryoX</span>
       <span class="logo-sub">Sticker Gallery</span>
@@ -404,12 +360,10 @@ main {
   </div>
 
   <div id="empty" style="display:none">
-    <div class="state-icon">⊗</div>
     <div class="state-title">Welcome to ZryoX</div>
   </div>
 
   <div id="error" style="display:none">
-    <div class="state-icon">✕</div>
     <div class="state-title">Could not load</div>
     <div class="state-sub">The paste may be invalid, expired, or unreachable.</div>
   </div>
