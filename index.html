@@ -131,37 +131,54 @@ const text = await res.text()
 
 const ids = text.match(/\d{6,}/g) || []
 
-document.getElementById("stats").innerText = ids.length + " stickers"
+document.getElementById("stats").innerText = Math.ceil(ids.length / 2) + " sticker pairs (" + ids.length + " total IDs)"
 
 const grid = document.getElementById("grid")
 
-for (const id of ids){
+for (let i = 0; i < ids.length; i += 2){
+
+const id1 = ids[i]
+const id2 = ids[i+1] || null  // if no pair, right side empty or fallback
 
 const card=document.createElement("div")
 card.className="card"
 
-card.innerHTML=`
-
+let imagesHTML = `
 <div class="image">
-<img id="img1-${id}" loading="lazy"
-src="https://tr.rbxcdn.com/c4265017c98559993061733b1125a23c/48/48/AvatarHeadshot/Png">
-<img id="img2-${id}" loading="lazy"
-src="https://tr.rbxcdn.com/c4265017c98559993061733b1125a23c/48/48/AvatarHeadshot/Png">
-</div>
-
-<div class="info">
-<div class="id">${id}</div>
-
-<button class="btn" onclick="copy('${id}',this)">
-Copy ID
-</button>
-</div>
-
+<img id="img1-${id1}" loading="lazy" src="https://tr.rbxcdn.com/c4265017c98559993061733b1125a23c/48/48/AvatarHeadshot/Png">
 `
 
+if (id2) {
+imagesHTML += `
+<img id="img2-${id2}" loading="lazy" src="https://tr.rbxcdn.com/c4265017c98559993061733b1125a23c/48/48/AvatarHeadshot/Png">
+`
+} else {
+imagesHTML += `
+<img id="img2-${id1}" loading="lazy" src="https://tr.rbxcdn.com/c4265017c98559993061733b1125a23c/48/48/AvatarHeadshot/Png"> <!-- fallback same if odd -->
+`
+}
+
+imagesHTML += `</div>
+
+<div class="info">
+<div class="id">\( {id1} \){id2 ? ' + ' + id2 : ''}</div>
+
+<button class="btn" onclick="copy('\( {id1} \){id2 ? ',' + id2 : ''}',this)">
+Copy ID${id2 ? 's' : ''}
+</button>
+</div>
+`
+
+card.innerHTML = imagesHTML
 grid.appendChild(card)
 
-loadImage(id)
+loadImage(id1, `img1-${id1}`)
+
+if (id2) {
+loadImage(id2, `img2-${id2}`)
+} else {
+loadImage(id1, `img2-${id1}`)
+}
 
 }
 
@@ -175,7 +192,7 @@ document.getElementById("loading").innerText="Failed loading stickers"
 
 }
 
-async function loadImage(id){
+async function loadImage(id, imgElementId){
 
 try{
 
@@ -184,9 +201,7 @@ const data = await res.json()
 
 if(data.data && data.data[0]){
 
-const url = data.data[0].imageUrl
-document.getElementById(`img1-${id}`).src = url
-document.getElementById(`img2-${id}`).src = url
+document.getElementById(imgElementId).src = data.data[0].imageUrl
 
 }
 
@@ -194,9 +209,9 @@ document.getElementById(`img2-${id}`).src = url
 
 }
 
-function copy(id,btn){
+function copy(text,btn){
 
-navigator.clipboard.writeText(id)
+navigator.clipboard.writeText(text)
 
 const t=btn.innerText
 btn.innerText="Copied"
