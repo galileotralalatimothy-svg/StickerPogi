@@ -95,7 +95,7 @@ color:#666;
 <p class="stats" id="stats"></p>
 </div>
 
-<div id="loading" class="loading">Loading stickers... (using noFilter CDN)</div>
+<div id="loading" class="loading">Loading stickers... (trying noFilter CDN)</div>
 
 <div class="grid" id="grid"></div>
 
@@ -144,32 +144,42 @@ try {
 const thumbRes = await fetch(
 `https://thumbnails.roblox.com/v1/assets?assetIds=${idsString}&size=420&format=Png&isCircular=false`
 )
+if (thumbRes.ok) {
 const data = await thumbRes.json()
-
 if (data.data) {
 data.data.forEach(item => {
 const imgElem = document.getElementById(`img-${item.targetId}`)
-if (imgElem && item.imageUrl) {
-imgElem.src = item.imageUrl.replace(/\/Png$/, '/Png/noFilter')  // add noFilter for better caching
+if (imgElem && item.imageUrl && item.state === "Completed") {
+let url = item.imageUrl
+if (!url.endsWith('/noFilter')) {
+url = url.replace(/\/Png$/, '/Png/noFilter')
+}
+imgElem.src = url
+} else if (imgElem) {
+imgElem.src = "https://via.placeholder.com/420?text=Mod/Err+" + item.targetId
 }
 })
 }
+} else {
+console.log("API status not ok:", thumbRes.status)
+}
 } catch (e) {
-console.log("Batch error:", e)
+console.log("Fetch error for batch:", e)
 }
 
-await new Promise(r => setTimeout(r, 800))
+await new Promise(r => setTimeout(r, 1000)) // 1 second delay para safe
 }
 
 }catch(e){
-document.getElementById("loading").innerText="Failed - try refresh or check if IDs are valid decals"
+console.error("Load error:", e)
+document.getElementById("loading").innerText="Failed loading - check browser console (F12) for details"
 }
 }
 
 function copy(id,btn){
 navigator.clipboard.writeText(id)
 const t=btn.innerText
-btn.innerText="Copied"
+btn.innerText="Copied!"
 setTimeout(()=>{
 btn.innerText=t
 },1000)
