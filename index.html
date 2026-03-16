@@ -124,7 +124,6 @@ margin-top:60px;
 }
 
 </style>
-
 </head>
 
 <body>
@@ -152,10 +151,10 @@ margin-top:60px;
 
 <script>
 
-const urlParams=new URLSearchParams(window.location.search)
-const pasteID=urlParams.get("id")
+const urlParams = new URLSearchParams(window.location.search)
+const pasteID = urlParams.get("id")
 
-const proxy="https://corsproxy.io/?"
+const proxy = "https://api.allorigins.win/raw?url="
 
 async function init(){
 
@@ -171,15 +170,15 @@ return
 
 try{
 
-const res=await fetch(
-proxy+encodeURIComponent(`https://api.pastefy.app/paste/${pasteID}`)
+const res = await fetch(
+proxy + encodeURIComponent(`https://api.pastefy.app/paste/${pasteID}`)
 )
 
-const data=await res.json()
+const data = await res.json()
 
-const content=data.paste.content
+const content = data.paste.content
 
-const ids=content.match(/\d{6,}/g)||[]
+const ids = content.match(/\d{6,}/g) || []
 
 if(ids.length===0){
 
@@ -191,8 +190,8 @@ return
 document.getElementById("loading-text").style.display="none"
 document.getElementById("user-info").style.display="block"
 
-document.getElementById("user-title").innerText=data.paste.title||"ZryoX"
-document.getElementById("user-stats").innerText=ids.length+" stickers"
+document.getElementById("user-title").innerText = data.paste.title || "ZryoX"
+document.getElementById("user-stats").innerText = ids.length + " stickers"
 
 document.getElementById("view-raw").onclick=()=>{
 window.open(`https://pastefy.app/${pasteID}/raw`)
@@ -202,7 +201,7 @@ document.getElementById("copy-all").onclick=()=>{
 navigator.clipboard.writeText(ids.join("\n"))
 }
 
-const grid=document.getElementById("sticker-grid")
+const grid = document.getElementById("sticker-grid")
 
 ids.forEach(id=>{
 
@@ -217,6 +216,7 @@ src="https://tr.rbxcdn.com/c4265017c98559993061733b1125a23c/48/48/AvatarHeadshot
 </div>
 
 <div class="card-info">
+
 <div class="asset-id">${id}</div>
 
 <button class="copy-btn" onclick="copyId('${id}',this)">
@@ -224,17 +224,18 @@ Copy ID
 </button>
 
 </div>
+
 `
 
 grid.appendChild(card)
 
 const thumbUrl=`https://thumbnails.roblox.com/v1/assets?assetIds=${id}&size=420x420&format=Png&isCircular=false`
 
-fetch(proxy+encodeURIComponent(thumbUrl))
+fetch(proxy + encodeURIComponent(thumbUrl))
 .then(r=>r.json())
 .then(d=>{
 
-if(d.data&&d.data[0]&&d.data[0].imageUrl){
+if(d.data && d.data[0] && d.data[0].imageUrl){
 
 let cdn=d.data[0].imageUrl
 
