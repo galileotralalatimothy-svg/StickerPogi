@@ -103,50 +103,50 @@ const pasteID = params.get("id")
 
 if(!pasteID){
     document.getElementById("loading").innerText="Add ?id=PASTE_ID to the URL";
-    throw new Error("No ID");
+    throw new Error("No ID")
 }
 
 async function load(){
     try{
-        const res = await fetch(`https://pastefy.app/${pasteID}/raw`);
-        const text = await res.text();
-        const ids = text.match(/\d{6,}/g) || [];
+        const res = await fetch(`https://pastefy.app/${pasteID}/raw`)
+        const text = await res.text()
+        const ids = text.match(/\d{6,}/g) || []
 
-        document.getElementById("stats").innerText = ids.length + " stickers";
-
-        const grid = document.getElementById("grid");
+        document.getElementById("stats").innerText = ids.length + " stickers"
+        const grid = document.getElementById("grid")
 
         for(const id of ids){
-            const card = document.createElement("div");
-            card.className="card";
+            const card = document.createElement("div")
+            card.className = "card"
             card.innerHTML = `
-                <div class="image">
-                    <img id="img-${id}" loading="lazy" src="https://assetdelivery.roblox.com/v1/asset/?id=${id}">
-                </div>
-                <div class="info">
-                    <div class="id">${id}</div>
-                    <button class="btn" onclick="copy('${id}',this)">Copy ID</button>
-                </div>
-            `;
-            grid.appendChild(card);
+            <div class="image">
+                <img id="img-${id}" loading="lazy" 
+                src="https://tr.rbxcdn.com/180DAY-5a72278ef15969615cefcc684868d3af/420/420/Image/Png/noFilter" alt="Sticker">
+            </div>
+            <div class="info">
+                <div class="id">${id}</div>
+                <button class="btn" onclick="copy('${id}',this)">Copy ID</button>
+            </div>
+            `
+            grid.appendChild(card)
         }
 
-        document.getElementById("loading").style.display="none";
+        document.getElementById("loading").style.display="none"
 
     }catch(e){
-        console.log(e);
-        document.getElementById("loading").innerText="Failed loading stickers";
+        console.log(e)
+        document.getElementById("loading").innerText="Failed loading stickers"
     }
 }
 
 function copy(id,btn){
-    navigator.clipboard.writeText(id);
-    const t = btn.innerText;
-    btn.innerText = "Copied";
-    setTimeout(()=>{btn.innerText = t;},1000);
+    navigator.clipboard.writeText(id)
+    const t = btn.innerText
+    btn.innerText = "Copied"
+    setTimeout(()=>{btn.innerText = t},1000)
 }
 
-load();
+load()
 </script>
 
 </body>
