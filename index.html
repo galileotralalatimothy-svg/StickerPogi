@@ -95,7 +95,7 @@ color:#666;
 <p class="stats" id="stats"></p>
 </div>
 
-<div id="loading" class="loading">Loading stickers... (trying noFilter CDN)</div>
+<div id="loading" class="loading">Loading stickers... (using noFilter for raw thumbnails)</div>
 
 <div class="grid" id="grid"></div>
 
@@ -140,6 +140,7 @@ for (let i = 0; i < ids.length; i += batchSize) {
 const batch = ids.slice(i, i + batchSize)
 const idsString = batch.join(",")
 
+for (let attempt = 1; attempt <= 2; attempt++) {
 try {
 const thumbRes = await fetch(
 `https://thumbnails.roblox.com/v1/assets?assetIds=${idsString}&size=420&format=Png&isCircular=false`
@@ -151,28 +152,31 @@ data.data.forEach(item => {
 const imgElem = document.getElementById(`img-${item.targetId}`)
 if (imgElem && item.imageUrl && item.state === "Completed") {
 let url = item.imageUrl
-if (!url.endsWith('/noFilter')) {
+if (!url.includes('/noFilter')) {
 url = url.replace(/\/Png$/, '/Png/noFilter')
 }
 imgElem.src = url
 } else if (imgElem) {
-imgElem.src = "https://via.placeholder.com/420?text=Mod/Err+" + item.targetId
+imgElem.src = `https://www.roblox.com/Thumbs/Asset.ashx?assetId=${item.targetId}&width=420&height=420&format=png`
 }
 })
+break
 }
-} else {
-console.log("API status not ok:", thumbRes.status)
+} else if (thumbRes.status === 429) {
+await new Promise(r => setTimeout(r, 2000))
 }
 } catch (e) {
-console.log("Fetch error for batch:", e)
+console.log("Attempt " + attempt + " failed:", e)
+}
+await new Promise(r => setTimeout(r, 1200))
 }
 
-await new Promise(r => setTimeout(r, 1000)) // 1 second delay para safe
+await new Promise(r => setTimeout(r, 800))
 }
 
 }catch(e){
-console.error("Load error:", e)
-document.getElementById("loading").innerText="Failed loading - check browser console (F12) for details"
+console.error("Main load error:", e)
+document.getElementById("loading").innerText="Failed loading stickers - check console (F12) or try fewer IDs"
 }
 }
 
