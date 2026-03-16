@@ -1,239 +1,278 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZryoX's Closet</title>
-    <style>
-        body {
-            background-color: #0c0c0c;
-            color: #ffffff;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            line-height: 1.4;
-        }    
-        .header {
-            padding-bottom: 15px;
-            border-bottom: 1px solid #1f1f1f;
-            margin-bottom: 25px;
-        }
-        .title {
-            font-size: 26px;
-            font-weight: 700;
-            margin: 0;
-            letter-spacing: -0.5px;
-        }
-        .subtitle {
-            font-size: 14px;
-            color: #777;
-            margin: 4px 0 0 0;
-        }
-        .user-section {
-            margin-bottom: 25px;
-            display: none; /* Lalabas lang kapag may data */
-        }
-        .username {
-            font-size: 22px;
-            font-weight: 700;
-            margin: 0 0 4px 0;
-        }
-        .stats {
-            font-size: 13px;
-            color: #555;
-            margin-bottom: 15px;
-        }
-        .button-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .btn {
-            background-color: #1a1a1a;
-            color: #efefef;
-            border: 1px solid #2a2a2a;
-            padding: 10px 18px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-        }
-        .card {
-            background-color: #111;
-            border-radius: 12px;
-            overflow: hidden;
-            border: 1px solid #1f1f1f;
-            display: flex;
-            flex-direction: column;
-        }
-        .image-container {
-            aspect-ratio: 1/1;
-            background-color: #000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 15px;
-        }
-        .image-container img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-        }
-        .card-info {
-            padding: 12px;
-            background-color: #111;
-            border-top: 1px solid #1a1a1a;
-        }
-        .asset-id {
-            font-family: monospace;
-            font-size: 12px;
-            color: #444;
-            margin-bottom: 10px;
-        }
-        .copy-btn {
-            width: 100%;
-            background-color: #1a1a1a;
-            color: #999;
-            border: 1px solid #222;
-            padding: 10px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 13px;
-            transition: 0.2s;
-        }
-        .copy-btn:hover {
-            background-color: #222;
-            color: #fff;
-        }
-        #loading-text {
-            text-align: center;
-            color: #555;
-            margin-top: 50px;
-        }
-        .empty-state {
-            display: none;
-            text-align: center;
-            margin-top: 150px;
-        }
-        .empty-state h2 { color: #444; font-size: 18px; margin-bottom: 10px; }
-        .code-snippet { background: #1a1a1a; padding: 4px 8px; border-radius: 6px; color: #666; font-family: monospace; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZryoX's Closet</title>
+
+<style>
+
+body{
+background:#0c0c0c;
+color:#fff;
+font-family:'Segoe UI',Roboto,Arial;
+margin:0;
+padding:20px;
+}
+
+.header{
+border-bottom:1px solid #1f1f1f;
+padding-bottom:15px;
+margin-bottom:25px;
+}
+
+.title{
+font-size:26px;
+font-weight:700;
+margin:0;
+}
+
+.subtitle{
+font-size:14px;
+color:#777;
+margin-top:4px;
+}
+
+.user-section{
+display:none;
+margin-bottom:25px;
+}
+
+.username{
+font-size:22px;
+font-weight:700;
+margin-bottom:6px;
+}
+
+.stats{
+font-size:13px;
+color:#555;
+margin-bottom:12px;
+}
+
+.button-group{
+display:flex;
+gap:10px;
+}
+
+.btn{
+background:#1a1a1a;
+border:1px solid #2a2a2a;
+color:#eee;
+padding:10px 16px;
+border-radius:8px;
+cursor:pointer;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:12px;
+}
+
+.card{
+background:#111;
+border-radius:12px;
+overflow:hidden;
+border:1px solid #1f1f1f;
+}
+
+.image-container{
+aspect-ratio:1/1;
+display:flex;
+align-items:center;
+justify-content:center;
+padding:15px;
+background:#000;
+}
+
+.image-container img{
+max-width:100%;
+max-height:100%;
+}
+
+.card-info{
+padding:10px;
+}
+
+.asset-id{
+font-family:monospace;
+font-size:11px;
+color:#555;
+margin-bottom:8px;
+}
+
+.copy-btn{
+width:100%;
+background:#1a1a1a;
+border:1px solid #222;
+color:#999;
+padding:10px;
+border-radius:8px;
+cursor:pointer;
+}
+
+.copy-btn:hover{
+background:#222;
+color:#fff;
+}
+
+#loading-text{
+text-align:center;
+color:#777;
+margin-top:60px;
+}
+
+</style>
+
 </head>
+
 <body>
-    <div class="header">
-        <p class="title">ZryoX's Closet</p>
-        <p class="subtitle">Sticker Gallery</p>
-    </div>
-    
-    <div id="loading-text">Fetching stickers...</div>
-    
-    <div id="empty-state" class="empty-state">
-        <h2>No paste ID</h2>
-        <p>Add <span class="code-snippet">?id=PASTE_ID</span> to the URL.</p>
-    </div>
 
-    <div class="user-section" id="user-info">
-        <p class="username" id="user-title">Loading User...</p>
-        <p class="stats" id="user-stats">0 stickers</p>
-        <div class="button-group">
-            <button class="btn" id="copy-all">Copy All IDs</button>
-            <button class="btn" id="view-raw">RAW</button>
-        </div>
-    </div>
-    
-    <div class="grid" id="sticker-grid"></div>
+<div class="header">
+<p class="title">ZryoX's Closet</p>
+<p class="subtitle">Sticker Gallery</p>
+</div>
 
-    <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const pasteID = urlParams.get('id');
-        const proxy = "https://api.allorigins.win/get?url=";
+<div id="loading-text">Fetching stickers...</div>
 
-        async function init() {
-            if (!pasteID) {
-                document.getElementById('loading-text').style.display = "none";
-                document.getElementById('empty-state').style.display = "block";
-                return;
-            }
+<div class="user-section" id="user-info">
 
-            try {
-                const targetUrl = `https://api.pastefy.app/paste/${pasteID}`;
-                const response = await fetch(proxy + encodeURIComponent(targetUrl));
-                const jsonWrapper = await response.json();
-                
-                // Ang AllOrigins ay binabalot ang data sa isang 'contents' string
-                const data = JSON.parse(jsonWrapper.contents);
-                
-                if (!data || !data.paste) {
-                    throw new Error("Invalid Paste Data");
-                }
+<p class="username" id="user-title">ZryoX's Stickers</p>
+<p class="stats" id="user-stats">0 stickers</p>
 
-                const content = data.paste.content;
-                const ids = content.match(/\d{6,}/g) || [];
+<div class="button-group">
+<button class="btn" id="copy-all">Copy All IDs</button>
+<button class="btn" id="view-raw">RAW</button>
+</div>
 
-                if (ids.length === 0) {
-                    document.getElementById('loading-text').innerText = "No sticker IDs found in this paste.";
-                    return;
-                }
+</div>
 
-                // Ipakita ang UI elements
-                document.getElementById('loading-text').style.display = "none";
-                document.getElementById('user-info').style.display = "block";
-                
-                // I-update ang header (gaya ng "howaskedo_v2's Stickers")
-                document.getElementById('user-title').innerText = (data.paste.title || "User") + "'s Stickers";
-                document.getElementById('user-stats').innerText = `${ids.length} stickers · ${new Date().toLocaleDateString()}`;
+<div class="grid" id="sticker-grid"></div>
 
-                document.getElementById('view-raw').onclick = () => window.open(`https://pastefy.app/${pasteID}/raw`);
-                document.getElementById('copy-all').onclick = () => {
-                    navigator.clipboard.writeText(ids.join('\n'));
-                    alert('All IDs copied!');
-                };
+<script>
 
-                const grid = document.getElementById('sticker-grid');
-                grid.innerHTML = ""; // Siguraduhing malinis ang grid
+const urlParams=new URLSearchParams(window.location.search)
+const pasteID=urlParams.get("id")
 
-                ids.forEach(id => {
-                    const card = document.createElement('div');
-                    card.className = 'card';
-                    
-                    // Direct Roblox Thumbnail link
-                    const thumbUrl = `https://www.roblox.com/asset-thumbnail/image?assetId=${id}&width=420&height=420&format=png`;
+const proxy="https://corsproxy.io/?"
 
-                    card.innerHTML = `
-                        <div class="image-container">
-                            <img src="${thumbUrl}" alt="Sticker" loading="lazy">
-                        </div>
-                        <div class="card-info">
-                            <div class="asset-id">${id}</div>
-                            <button class="copy-btn" onclick="copyId('${id}', this)">Copy ID</button>
-                        </div>
-                    `;
-                    grid.appendChild(card);
-                });
+async function init(){
 
-            } catch (err) {
-                console.error(err);
-                document.getElementById('loading-text').innerText = "Error loading stickers. Check if the Paste ID is valid.";
-            }
-        }
+if(!pasteID){
 
-        window.copyId = (id, btn) => {
-            navigator.clipboard.writeText(id);
-            const originalText = btn.innerText;
-            btn.innerText = "Copied";
-            btn.style.color = "#fff";
-            setTimeout(() => {
-                btn.innerText = originalText;
-                btn.style.color = "#999";
-            }, 1000);
-        };
+document.getElementById("loading-text").innerHTML=`
+<h2 style="color:#aaa">No paste ID</h2>
+<p style="color:#555">Add <code>?id=PASTE_ID</code> to the URL.</p>
+`
 
-        init();
-    </script>
+return
+}
+
+try{
+
+const res=await fetch(
+proxy+encodeURIComponent(`https://api.pastefy.app/paste/${pasteID}`)
+)
+
+const data=await res.json()
+
+const content=data.paste.content
+
+const ids=content.match(/\d{6,}/g)||[]
+
+if(ids.length===0){
+
+document.getElementById("loading-text").innerText="No stickers"
+return
+
+}
+
+document.getElementById("loading-text").style.display="none"
+document.getElementById("user-info").style.display="block"
+
+document.getElementById("user-title").innerText=data.paste.title||"ZryoX"
+document.getElementById("user-stats").innerText=ids.length+" stickers"
+
+document.getElementById("view-raw").onclick=()=>{
+window.open(`https://pastefy.app/${pasteID}/raw`)
+}
+
+document.getElementById("copy-all").onclick=()=>{
+navigator.clipboard.writeText(ids.join("\n"))
+}
+
+const grid=document.getElementById("sticker-grid")
+
+ids.forEach(id=>{
+
+const card=document.createElement("div")
+card.className="card"
+
+card.innerHTML=`
+
+<div class="image-container">
+<img id="img-${id}"
+src="https://tr.rbxcdn.com/c4265017c98559993061733b1125a23c/48/48/AvatarHeadshot/Png">
+</div>
+
+<div class="card-info">
+<div class="asset-id">${id}</div>
+
+<button class="copy-btn" onclick="copyId('${id}',this)">
+Copy ID
+</button>
+
+</div>
+`
+
+grid.appendChild(card)
+
+const thumbUrl=`https://thumbnails.roblox.com/v1/assets?assetIds=${id}&size=420x420&format=Png&isCircular=false`
+
+fetch(proxy+encodeURIComponent(thumbUrl))
+.then(r=>r.json())
+.then(d=>{
+
+if(d.data&&d.data[0]&&d.data[0].imageUrl){
+
+let cdn=d.data[0].imageUrl
+
+cdn=cdn.replace(/\/\d+\/\d+\//,"/420/420/")
+cdn=cdn.replace("AvatarHeadshot","Image")
+
+document.getElementById(`img-${id}`).src=cdn
+
+}
+
+})
+
+})
+
+}catch{
+
+document.getElementById("loading-text").innerText="Error loading stickers"
+
+}
+
+}
+
+window.copyId=(id,btn)=>{
+
+navigator.clipboard.writeText(id)
+
+let t=btn.innerText
+btn.innerText="Copied"
+
+setTimeout(()=>{
+btn.innerText=t
+},1000)
+
+}
+
+init()
+
+</script>
+
 </body>
 </html>
