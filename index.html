@@ -106,13 +106,8 @@ if(!pasteID){
     throw new Error("No ID")
 }
 
-// **Manual mapping of sticker ID → public image hash**
-const imageMap = {
-    "73426747843582":"180DAY-5a72278ef15969615cefcc684868d3af",
-    "101840946120849":"180DAY-abc123examplehash",
-    "112084077850956":"180DAY-xyz456examplehash",
-    // add more IDs here with their corresponding image hash
-}
+// Default placeholder image (for restricted/non-public assets)
+const defaultImage = "https://tr.rbxcdn.com/180DAY-5a72278ef15969615cefcc684868d3af/420/420/Image/Png/noFilter";
 
 async function load(){
     try{
@@ -126,14 +121,10 @@ async function load(){
         for(const id of ids){
             const card = document.createElement("div")
             card.className = "card"
-            
-            // check if we have a mapped public image
-            const hash = imageMap[id] || "placeholderhash"
-            const imgUrl = `https://tr.rbxcdn.com/${hash}/420/420/Image/Png/noFilter`
-            
+
             card.innerHTML = `
                 <div class="image">
-                    <img src="${imgUrl}" loading="lazy" alt="Sticker">
+                    <img id="img-${id}" loading="lazy" src="${defaultImage}" alt="Sticker">
                 </div>
                 <div class="info">
                     <div class="id">${id}</div>
