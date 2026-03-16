@@ -132,7 +132,6 @@
             margin-top: 50px;
         }
 
-        /* BAGONG CSS PARA SA EMPTY STATE */
         .empty-state {
             display: none;
             text-align: center;
@@ -188,10 +187,11 @@
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const pasteID = urlParams.get('id');
-        const proxy = "https://corsproxy.io/?";
+        
+        // Pinalitan natin ang proxy gamit ang mas stable na allorigins
+        const proxy = "https://api.allorigins.win/raw?url=";
 
         async function init() {
-            // BINAGO: Ipapakita ang empty state kapag walang ID
             if (!pasteID) {
                 document.getElementById('loading-text').style.display = "none";
                 document.getElementById('empty-state').style.display = "block";
@@ -250,7 +250,8 @@
                         });
                 });
 
-            } catch {
+            } catch (error) {
+                console.error(error);
                 document.getElementById('loading-text').innerText = "Error loading stickers. Check if the ID is correct or CORS is failing.";
             }
         }
