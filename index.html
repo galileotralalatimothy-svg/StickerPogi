@@ -4,108 +4,177 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ZryoX's Closet</title>
+
 <style>
-body{background:#0c0c0c;color:#fff;font-family:Segoe UI,Roboto,Arial;margin:0;padding:20px;}
-.header{border-bottom:1px solid #1f1f1f;padding-bottom:15px;margin-bottom:20px;}
-.title{font-size:26px;font-weight:700;margin:0;}
-.subtitle{font-size:14px;color:#777;margin-top:4px;}
-.stats{font-size:13px;color:#555;margin-top:6px;}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
-.card{background:#111;border-radius:10px;overflow:hidden;border:1px solid #1f1f1f;}
-.image{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;background:#000;}
-.image img{width:100%;height:100%;object-fit:contain;}
-.info{padding:8px;}
-.id{font-family:monospace;font-size:11px;color:#555;margin-bottom:6px;}
-.btn{width:100%;background:#1a1a1a;border:1px solid #222;color:#aaa;padding:8px;border-radius:6px;cursor:pointer;font-size:12px;}
-.btn:hover{background:#222;color:#fff;}
-.loading{text-align:center;margin-top:40px;color:#666;}
+body{
+background:#0c0c0c;
+color:#fff;
+font-family:Segoe UI,Roboto,Arial;
+margin:0;
+padding:20px;
+}
+.header{
+border-bottom:1px solid #1f1f1f;
+padding-bottom:15px;
+margin-bottom:20px;
+}
+.title{
+font-size:26px;
+font-weight:700;
+margin:0;
+}
+.subtitle{
+font-size:14px;
+color:#777;
+margin-top:4px;
+}
+.stats{
+font-size:13px;
+color:#555;
+margin-top:6px;
+}
+.grid{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:10px;
+}
+.card{
+background:#111;
+border-radius:10px;
+overflow:hidden;
+border:1px solid #1f1f1f;
+}
+.image{
+aspect-ratio:1/1;
+display:flex;
+align-items:center;
+justify-content:center;
+background:#000;
+}
+.image img{
+width:100%;
+height:100%;
+object-fit:contain;
+}
+.info{
+padding:8px;
+}
+.id{
+font-family:monospace;
+font-size:11px;
+color:#555;
+margin-bottom:6px;
+}
+.btn{
+width:100%;
+background:#1a1a1a;
+border:1px solid #222;
+color:#aaa;
+padding:8px;
+border-radius:6px;
+cursor:pointer;
+font-size:12px;
+}
+.btn:hover{
+background:#222;
+color:#fff;
+}
+.loading{
+text-align:center;
+margin-top:40px;
+color:#666;
+}
 </style>
 </head>
+
 <body>
 
 <div class="header">
-    <p class="title">ZryoX's Closet</p>
-    <p class="subtitle">Sticker Gallery</p>
-    <p class="stats" id="stats"></p>
+<p class="title">ZryoX's Closet</p>
+<p class="subtitle">Sticker Gallery</p>
+<p class="stats" id="stats"></p>
 </div>
 
 <div id="loading" class="loading">Loading stickers...</div>
+
 <div class="grid" id="grid"></div>
 
 <script>
-const params = new URLSearchParams(window.location.search);
-const pasteID = params.get("id");
-const PLACEHOLDER = "https://tr.rbxcdn.com/c4265017c98559993061733b1125a23c/48/48/AvatarHeadshot/Png";
+const params = new URLSearchParams(window.location.search)
+const pasteID = params.get("id")
 
 if(!pasteID){
-    document.getElementById("loading").innerText="Add ?id=PASTE_ID to the URL";
-    throw new Error("No ID");
+document.getElementById("loading").innerText=""
+throw new Error("No ID")
 }
 
-// Limit concurrent fetches to avoid hanging browser
-const CONCURRENCY = 10;
+async function load(){
+try{
+const res = await fetch(`https://pastefy.app/${pasteID}/raw`)
+const text = await res.text()
 
-async function load() {
-    try{
-        const res = await fetch(`https://pastefy.app/${pasteID}/raw`);
-        const text = await res.text();
-        const ids = text.match(/\d{6,}/g) || [];
+const ids = text.match(/\d{6,}/g) || []
+document.getElementById("stats").innerText = `${ids.length} stickers`
 
-        document.getElementById("stats").innerText = ids.length + " stickers";
-        const grid = document.getElementById("grid");
+const grid = document.getElementById("grid")
 
-        // Create all cards first with placeholders
-        ids.forEach(id => {
-            const card = document.createElement("div");
-            card.className = "card";
-            card.innerHTML = `
-                <div class="image">
-                    <img id="img-${id}" src="${PLACEHOLDER}" loading="lazy" alt="Sticker">
-                </div>
-                <div class="info">
-                    <div class="id">${id}</div>
-                    <button class="btn" onclick="copy('${id}',this)">Copy ID</button>
-                </div>
-            `;
-            grid.appendChild(card);
-        });
+ids.forEach(id => {
+const card = document.createElement("div")
+card.className="card"
+card.innerHTML=`
+<div class="image">
+<img id="img-${id}" loading="lazy" 
+     src="https://tr.rbxcdn.com/c4265017c98559993061733b1125a23c/48/48/AvatarHeadshot/Png">
+</div>
+<div class="info">
+<div class="id">${id}</div>
+<button class="btn" onclick="copy('${id}',this)">Copy ID</button>
+</div>
+`
+grid.appendChild(card)
+})
 
-        document.getElementById("loading").style.display="none";
+document.getElementById("loading").style.display="none"
 
-        // Progressive loading with concurrency
-        let i = 0;
-        async function nextBatch() {
-            const batch = ids.slice(i, i+CONCURRENCY);
-            await Promise.allSettled(batch.map(loadImage));
-            i += CONCURRENCY;
-            if(i < ids.length) nextBatch();
-        }
-        nextBatch();
+const batchSize = 10
+for (let i = 0; i < ids.length; i += batchSize) {
+const batch = ids.slice(i, i + batchSize)
+const idsString = batch.join(",")
 
-    }catch(e){
-        console.log(e);
-        document.getElementById("loading").innerText="Failed loading stickers";
-    }
+try {
+const thumbRes = await fetch(
+`https://thumbnails.roblox.com/v1/assets?assetIds=${idsString}&size=420x420&format=Png&isCircular=false`
+)
+const data = await thumbRes.json()
+
+if (data.data) {
+data.data.forEach(item => {
+const imgElem = document.getElementById(`img-${item.targetId}`)
+if (imgElem && item.imageUrl) {
+imgElem.src = item.imageUrl
+}
+})
+}
+} catch (e) {
+console.log("Batch failed:", e)
 }
 
-async function loadImage(id){
-    try{
-        const res = await fetch(`https://thumbnails.roblox.com/v1/assets?assetIds=${id}&size=420x420&format=Png&isCircular=false`);
-        const data = await res.json();
-        if(data.data && data.data[0] && data.data[0].imageUrl){
-            document.getElementById(`img-${id}`).src = data.data[0].imageUrl;
-        }
-    }catch{}
+await new Promise(r => setTimeout(r, 300))
+}
+
+}catch{
+document.getElementById("loading").innerText="Failed loading stickers"
+}
 }
 
 function copy(id,btn){
-    navigator.clipboard.writeText(id);
-    const t = btn.innerText;
-    btn.innerText = "Copied";
-    setTimeout(()=>{btn.innerText = t},1000);
+navigator.clipboard.writeText(id)
+const t=btn.innerText
+btn.innerText="Copied!"
+setTimeout(()=>{btn.innerText=t},1000)
 }
 
-load();
+load()
 </script>
 
 </body>
