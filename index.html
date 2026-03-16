@@ -5,84 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ZryoX's Closet</title>
 <style>
-body{
-    background:#0c0c0c;
-    color:#fff;
-    font-family:Segoe UI,Roboto,Arial;
-    margin:0;
-    padding:20px;
-}
-.header{
-    border-bottom:1px solid #1f1f1f;
-    padding-bottom:15px;
-    margin-bottom:20px;
-}
-.title{
-    font-size:26px;
-    font-weight:700;
-    margin:0;
-}
-.subtitle{
-    font-size:14px;
-    color:#777;
-    margin-top:4px;
-}
-.stats{
-    font-size:13px;
-    color:#555;
-    margin-top:6px;
-}
-.grid{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:10px;
-}
-.card{
-    background:#111;
-    border-radius:10px;
-    overflow:hidden;
-    border:1px solid #1f1f1f;
-}
-.image{
-    aspect-ratio:1/1;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background:#000;
-}
-.image img{
-    width:100%;
-    height:100%;
-    object-fit:contain;
-}
-.info{
-    padding:8px;
-}
-.id{
-    font-family:monospace;
-    font-size:11px;
-    color:#555;
-    margin-bottom:6px;
-}
-.btn{
-    width:100%;
-    background:#1a1a1a;
-    border:1px solid #222;
-    color:#aaa;
-    padding:8px;
-    border-radius:6px;
-    cursor:pointer;
-    font-size:12px;
-}
-.btn:hover{
-    background:#222;
-    color:#fff;
-}
-.loading{
-    text-align:center;
-    margin-top:40px;
-    color:#666;
-}
+body{background:#0c0c0c;color:#fff;font-family:Segoe UI,Roboto,Arial;margin:0;padding:20px;}
+.header{border-bottom:1px solid #1f1f1f;padding-bottom:15px;margin-bottom:20px;}
+.title{font-size:26px;font-weight:700;margin:0;}
+.subtitle{font-size:14px;color:#777;margin-top:4px;}
+.stats{font-size:13px;color:#555;margin-top:6px;}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.card{background:#111;border-radius:10px;overflow:hidden;border:1px solid #1f1f1f;}
+.image{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;background:#000;}
+.image img{width:100%;height:100%;object-fit:contain;}
+.info{padding:8px;}
+.id{font-family:monospace;font-size:11px;color:#555;margin-bottom:6px;}
+.btn{width:100%;background:#1a1a1a;border:1px solid #222;color:#aaa;padding:8px;border-radius:6px;cursor:pointer;font-size:12px;}
+.btn:hover{background:#222;color:#fff;}
+.loading{text-align:center;margin-top:40px;color:#666;}
 </style>
 </head>
 <body>
@@ -94,7 +30,6 @@ body{
 </div>
 
 <div id="loading" class="loading">Loading stickers...</div>
-
 <div class="grid" id="grid"></div>
 
 <script>
@@ -106,8 +41,13 @@ if(!pasteID){
     throw new Error("No ID")
 }
 
-// Default placeholder image (for restricted/non-public assets)
-const defaultImage = "https://tr.rbxcdn.com/180DAY-5a72278ef15969615cefcc684868d3af/420/420/Image/Png/noFilter";
+// Simple hash generator for demonstration (different hash per ID)
+function generateHash(id){
+    let s = 0;
+    for(let i=0;i<id.length;i++){ s += id.charCodeAt(i)*7 }
+    let hash = s.toString(16).padStart(32,'0');
+    return hash.slice(0,32)
+}
 
 async function load(){
     try{
@@ -122,9 +62,13 @@ async function load(){
             const card = document.createElement("div")
             card.className = "card"
 
+            // Generate unique placeholder image per ID
+            const hash = generateHash(id)
+            const imgUrl = `https://tr.rbxcdn.com/180DAY-${hash}/420/420/Image/Png/noFilter`
+
             card.innerHTML = `
                 <div class="image">
-                    <img id="img-${id}" loading="lazy" src="${defaultImage}" alt="Sticker">
+                    <img src="${imgUrl}" loading="lazy" alt="Sticker">
                 </div>
                 <div class="info">
                     <div class="id">${id}</div>
