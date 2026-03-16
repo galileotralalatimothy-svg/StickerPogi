@@ -119,16 +119,17 @@ async function load(){
             const card = document.createElement("div")
             card.className = "card"
             card.innerHTML = `
-            <div class="image">
-                <img id="img-${id}" loading="lazy" 
-                src="https://tr.rbxcdn.com/180DAY-5a72278ef15969615cefcc684868d3af/420/420/Image/Png/noFilter" alt="Sticker">
-            </div>
-            <div class="info">
-                <div class="id">${id}</div>
-                <button class="btn" onclick="copy('${id}',this)">Copy ID</button>
-            </div>
+                <div class="image">
+                    <img id="img-${id}" loading="lazy" 
+                    src="https://tr.rbxcdn.com/c4265017c98559993061733b1125a23c/48/48/AvatarHeadshot/Png" alt="Sticker">
+                </div>
+                <div class="info">
+                    <div class="id">${id}</div>
+                    <button class="btn" onclick="copy('${id}',this)">Copy ID</button>
+                </div>
             `
             grid.appendChild(card)
+            loadThumbnail(id)
         }
 
         document.getElementById("loading").style.display="none"
@@ -137,6 +138,18 @@ async function load(){
         console.log(e)
         document.getElementById("loading").innerText="Failed loading stickers"
     }
+}
+
+// Fetch the Roblox thumbnail for each sticker ID
+async function loadThumbnail(id){
+    try{
+        const res = await fetch(`https://thumbnails.roblox.com/v1/assets?assetIds=${id}&size=420x420&format=Png&isCircular=false`)
+        const data = await res.json()
+        if(data.data && data.data[0] && data.data[0].imageUrl){
+            let img = document.getElementById(`img-${id}`)
+            img.src = data.data[0].imageUrl
+        }
+    }catch{}
 }
 
 function copy(id,btn){
