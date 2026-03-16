@@ -117,8 +117,12 @@
     <div class="grid" id="grid"></div>
 
     <script>
-        // 🔹 Hardcoded Pastefy ID dito
-        const pasteID = "index.html"; // <-- Palitan mo ito ng actual Pastefy ID
+        const params = new URLSearchParams(window.location.search);
+        const pasteID = params.get("id");
+
+        if (!pasteID) {
+            document.getElementById("loading").innerHTML = "Error: No Paste ID found.<br>Usage: ?id=YOUR_PASTE_ID";
+        }
 
         async function loadStickers() {
             try {
@@ -137,14 +141,9 @@
                 for (const id of ids) {
                     const card = document.createElement("div");
                     card.className = "card";
-
                     card.innerHTML = `
                         <div class="image">
-                            <img id="img-${id}" 
-                                 src="https://assetdelivery.roblox.com/v1/asset/?id=${id}" 
-                                 onerror="this.onerror=null; this.src='https://www.roblox.com/asset-thumbnail/image?assetId=${id}&width=420&height=420&format=png';"
-                                 loading="lazy"
-                                 alt="Sticker">
+                            <img id="img-${id}" src="https://placehold.co/420x420/111/444?text=..." loading="lazy" alt="Sticker">
                         </div>
                         <div class="info">
                             <div class="id-text">${id}</div>
@@ -155,6 +154,25 @@
                 }
 
                 loadingDiv.style.display = "none";
+
+                for (let i = 0; i < ids.length; i += 100) {
+                    const chunk = ids.slice(i, i + 100);
+                    const proxyUrl = `https://thumbnails.roproxy.com/v1/assets?assetIds=${chunk.join(',')}&returnPolicy=PlaceHolder&size=420x420&format=Png`;
+                    
+                    fetch(proxyUrl)
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data && data.data) {
+                                data.data.forEach(item => {
+                                    const imgElement = document.getElementById(`img-${item.targetId}`);
+                                    if (imgElement) {
+                                        imgElement.src = item.state === "Completed" ? item.imageUrl : "https://placehold.co/420x420/111/ff3333?text=N/A";
+                                    }
+                                });
+                            }
+                        })
+                        .catch(console.error);
+                }
 
             } catch (err) {
                 document.getElementById("loading").innerText = "Failed to load stickers. Check your Paste ID.";
@@ -178,8 +196,9 @@
             });
         }
 
-        // Auto load kapag nag-open ang page
-        loadStickers();
+        if (pasteID) {
+            loadStickers();
+        }
     </script>
 </body>
 </html>
